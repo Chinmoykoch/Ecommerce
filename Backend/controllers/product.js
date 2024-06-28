@@ -37,8 +37,9 @@ export const getproductDetail = asynchandler(async (req, res, next) => {
 
 export const getAllProducts = asynchandler(async (req, res, next) => {
 
-  const apifeature = new apiFeature(Products.find(),req.query)    // filtering products 
-  const products = await Products.find();
+  const apifeature = new apiFeature(Products.find(),req.query).search().filter()  // filtering and search products 
+  // const products = await Products.find();
+  const products = await apifeature.query
   res.status(200).json({
     success: true,
     products,
