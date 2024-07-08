@@ -1,88 +1,120 @@
 import { asynchandler } from "../utils/asynchandler.js";
 import { Products } from "../models/product.js";
-// import { ApiError } from "../utils/apiError.js";
 import { apiFeature } from "../utils/apiFeature.js";
 
-// create product -- Admin
 
+
+// Error handling function
+const handleMongoError = (error, res) => {
+  if (error.name === 'MongoError' && error.code === 11000) {
+    res.status(409).json({
+      success: false,
+      message: 'Duplicate key error',
+    });
+  } else {
+    res.status(500).json({
+      success: false,
+      message: 'Server Error',
+    });
+  }
+};
+
+
+// Create product -- Admin
 export const createProduct = asynchandler(async (req, res, next) => {
-  const product = await Products.create(req.body);
-  res.status(201).json({
-    success: true,
-    product,
-  });
-});
-
-// get/find single product
-
-export const getproductDetail = asynchandler(async (req, res, next) => {
-  const product = await Products.findById(req.params.id);
- 
-  if (!product) {
-    return res.status(500).json({
-      success: false,
-      message: "product not found",
+  try {
+    const product = await Products.create(req.body);
+    res.status(201).json({
+      success: true,
+      product,
     });
-
-    // return next(new ApiError("Product not found", 404));
+  } catch (error) {
+    handleMongoError(error, res);
   }
-
-  res.status(200).json({
-    success: true,
-    product,
-  });
 });
 
-// get all products
+// Get/find single product
+export const getProductDetail = asynchandler(async (req, res, next) => {
+  try {
+    const product = await Products.findById(req.params.id);
 
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      product,
+    });
+  } catch (error) {
+    handleMongoError(error, res);
+  }
+});
+
+// Get all products
 export const getAllProducts = asynchandler(async (req, res, next) => {
-
-  const apifeature = new apiFeature(Products.find(),req.query).search().filter()  // filtering and search products 
-  // const products = await Products.find();
-  const products = await apifeature.query
-  res.status(200).json({
-    success: true,
-    products,
-  });
+  try {
+    const apifeature = new apiFeature(Products.find(), req.query).search().filter();
+    const products = await apifeature.query;
+    res.status(200).json({
+      success: true,
+      products,
+    });
+  } catch (error) {
+    handleMongoError(error, res);
+  }
 });
 
-// update product -- Admin
-
+// Update product -- Admin
 export const updateProduct = asynchandler(async (req, res, next) => {
-  let product = await Products.findById(req.params.id);
+  try {
+    let product = await Products.findById(req.params.id);
 
-  if (!product) {
-    return res.status(500).json({
-      success: false,
-      message: "product not found",
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    product = await Products.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+      useFindAndModify: false,
     });
+
+    res.status(200).json({
+      success: true,
+      product,
+    });
+  } catch (error) {
+    handleMongoError(error, res);
   }
-  product = await Products.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-    useFindAndModify: false,
-  });
-  res.status(200).json({
-    success: true,
-    product,
-  });
 });
 
-// delete product
-
+// Delete product
 export const deleteProduct = asynchandler(async (req, res, next) => {
-  const product = await Products.findById(req.params.id);
+  try {
+    const product = await Products.findById(req.params.id);
 
-  if (!product) {
-    return res.status(500).json({
-      success: false,
-      message: "product not found",
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    await product.deleteOne();
+
+    res.status(200).json({
+      success: true,
+      message: "Product successfully deleted",
     });
+  } catch (error) {
+    handleMongoError(error, res);
   }
-  await product.deleteOne();
-
-  res.status(200).json({
-    success: "true",
-    message: " product successfully deleted",
-  });
 });
+

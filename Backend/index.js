@@ -33,6 +33,8 @@ app.listen(process.env.PORT, () => {
 
 // routes
 
-import routes from "../Backend/routes/product.js";
+import productRoutes from "../Backend/routes/product.js";
+import  userRoutes from "../Backend/routes/user.js"
 
-app.use("/api/v1", routes);
+app.use("/api/v1", productRoutes);
+app.use("/api/v1", userRoutes)

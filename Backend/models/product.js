@@ -10,16 +10,18 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  productImage: {
-    public_Id: {
-      type: String, // cloudinary url
-      required: true,
+  productImage: [
+    {
+      public_Id: {
+        type: String, // cloudinary url
+        required: true,
+      },
+      url: {
+        type: String, // cloudinary url
+        required: true,
+      },
     },
-    url: {
-      type: String, // cloudinary url
-      required: true,
-    },
-  },
+  ],
   price: {
     type: Number,
     required: true,
